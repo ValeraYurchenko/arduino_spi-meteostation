@@ -14,7 +14,7 @@
 //#define WHITE   0xFFFF
 
 #define BTN_SELECT 7
-#define BTN_PLUSE 3
+#define BTN_PLUSE 6//a6
 #define BTN_MINUS 12
 
 #define __CS 10
@@ -60,6 +60,7 @@ void setup() {
   display.setRotation(2);
   display.fillScreen(BLACK);
   display.setTextSize(3);
+  pinMode(3, OUTPUT);
 }
 
 byte prev_h = -1;
@@ -71,6 +72,9 @@ boolean needRefreshTime = false;
 boolean needRefreshDate = false;
 
 void loop() {
+
+  int light = analogRead(1);
+  analogWrite(3, map(light, 0, 1023, 0, 100) );
   
   if(editIndex == 0) {
     time = rtc.time();
@@ -125,7 +129,7 @@ void checkEdit() {
     //Serial.println(editIndex);
     delay(300);
   } else {
-    boolean btnPluse = digitalRead(BTN_PLUSE) == HIGH;
+    boolean btnPluse = analogRead(BTN_PLUSE) > 500;
     boolean btnMinus = digitalRead(BTN_MINUS) == HIGH;
     
     if(editIndex > 0 && (btnPluse || btnMinus)) {
