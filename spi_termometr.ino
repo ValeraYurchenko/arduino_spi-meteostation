@@ -5,13 +5,13 @@
 //------------- TFT ISP 1.44  --------------
 
 #define BLACK   0x0000
-//#define BLUE    0x001F
+#define BLUE    0x001F
 #define RED     0xF800
-//#define GREEN   0x07E0
-//#define CYAN    0x07FF
+#define GREEN   0x07E0
+#define CYAN    0x07FF
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0  
-//#define WHITE   0xFFFF
+#define WHITE   0xFFFF
 
 #define BTN_SELECT 7
 #define BTN_PLUSE 6//a6
@@ -71,10 +71,22 @@ byte editIndex = 0;
 boolean needRefreshTime = false;
 boolean needRefreshDate = false;
 
+int cur_disply_lighting = 1;
+
 void loop() {
 
-  int light = analogRead(1);
-  analogWrite(3, map(light, 0, 1023, 0, 100) );
+  int val = analogRead(0);
+  val = val < 200 ? 200 : val;
+  int dis_l = map(val, 200, 1023, 1, 200);
+  if(dis_l - cur_disply_lighting > 5) {
+    cur_disply_lighting += ((dis_l - cur_disply_lighting)/2);
+  } else if (cur_disply_lighting - dis_l > 5) {
+    cur_disply_lighting-= ((cur_disply_lighting - dis_l)/2);
+  }
+  analogWrite(3, cur_disply_lighting);
+  
+  //display.setTextSize(2);
+  //prindText(String(cur_disply_lighting) + "  ", 90, 110, RED);
   
   if(editIndex == 0) {
     time = rtc.time();
@@ -130,9 +142,9 @@ void checkEdit() {
     delay(300);
   } else {
     boolean btnPluse = analogRead(BTN_PLUSE) > 500;
-    boolean btnMinus = digitalRead(BTN_MINUS) == HIGH;
+    //boolean btnMinus = digitalRead(BTN_MINUS) == HIGH;
     
-    if(editIndex > 0 && (btnPluse || btnMinus)) {
+    if(editIndex > 0 && (btnPluse || digitalRead(BTN_MINUS) == HIGH)) {
       if(editIndex == 1) {//H
         time.hr = nextValue(time.hr, 0, 23, btnPluse);
       } else if(editIndex == 2) {//Min
